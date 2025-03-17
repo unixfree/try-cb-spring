@@ -1,5 +1,7 @@
 # Couchbase Spring Data Couchbase Travel-Sample Application
 
+이 애플리케이션은 https://github.com/couchbaselabs/try-cb-spring 에서 가져와서 보완한 것입니다.
+
 This is a sample application for getting started with [Couchbase Server] and [Spring Data Couchbase].
 The application runs a single page web UI for demonstrating SQL for Documents (N1QL), Sub-document requests and Full Text Search (FTS) querying capabilities.
 It uses Couchbase Server together with the [Spring Boot] web framework for [Java], [Swagger] for API documentation, [Vue] and [Bootstrap].
