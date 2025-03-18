@@ -1,9 +1,9 @@
 # Couchbase Spring Data Couchbase Travel-Sample Application
 
-이 애플리케이션은 https://github.com/couchbaselabs/try-cb-spring 에서 가져와서 보완한 것입니다.
-2025년 3월 기준으로 최신 버전(pom.xml)을 반영하였습니다. 
-최신화 과정에서 보안 관련 소스 코드는 일부 변경되었고 
-로컬 호스트에서 Springboot와 Vue.JS를 전부 구동시키기 위해 CORS 관련 부분도 변경되었습니다.
+이 애플리케이션은 https://github.com/couchbaselabs/try-cb-spring 에서 가져와서 보완한 것입니다. </br>
+2025년 3월 기준으로 최신 버전(pom.xml)을 반영하였습니다. </br>
+최신화 과정에서 보안 관련 소스 코드는 일부 변경되었고, </br>
+로컬 호스트에서 Springboot와 Vue.JS를 전부 구동시키기 위해 CORS 관련 부분도 변경되었습니다.</br>
 
 This is a sample application for getting started with [Couchbase Server] and [Spring Data Couchbase].
 The application runs a single page web UI for demonstrating SQL for Documents (N1QL), Sub-document requests and Full Text Search (FTS) querying capabilities.
