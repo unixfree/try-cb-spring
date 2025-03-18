@@ -1,13 +1,13 @@
 # Couchbase Spring Data Couchbase Travel-Sample Application
 
-이 애플리케이션은 https://github.com/couchbaselabs/try-cb-spring 에서 가져와서 보완한 것입니다. </br>
+이 소스는 https://github.com/couchbaselabs/try-cb-spring 에서 가져와서 보완한 것입니다. </br>
 2025년 3월 기준으로 최신 버전(pom.xml)을 반영하였습니다. </br>
 최신화 과정에서 보안 관련 소스 코드는 일부 변경되었고, </br>
 로컬 호스트에서 Springboot와 Vue.JS를 전부 구동시키기 위해 CORS 관련 부분도 변경되었습니다.</br>
 
-이 애플리케이션은 [Couchbase Server]와 Python SDK를 사용하여 시작하기 위한 샘플 애플리케이션이며, 
+이 소스는 [Couchbase Server]와 Springboot로 만든 샘플 애플리케이션입니다.
 카우치베이스 DB의 문서(Json)용 SQL++, 서브-도큐먼트 요청 및 자연어 텍스트 검색(FTS) 쿼리 기능을 시연하기 위한 단일 페이지 웹 UI를 실행합니다. 
-이 애플리케이션은 1) Couchbase Server와 2) [Python]을 위한 [Flask] 웹 프레임워크, API 문서화를 위한 [Swagger], 3)[Vue], 그리고 [Bootstrap]로 구성되어 있습니다.
+이 애플리케이션은 1) Couchbase Server와 2) [Springboot] 웹 프레임워크, API 문서화를 위한 [Swagger], 3)[Vue], 그리고 [Bootstrap]로 구성되어 있습니다.
 
 이 애플리케이션은 사용자가 공항과 날짜를 기반으로 항공편 경로를 검색하고 구매할 수 있는 비행 계획 도구입니다. 공항 선택은 서버 측 SQL++ 쿼리에 연결된 자동 완성 상자를 통해 동적으로 이루어집니다. 
 날짜 선택 후에는 데이터베이스에서 적합한 항공편 경로를 검색합니다. 추가 페이지에서는 비구조화된 키워드를 사용하여 호텔을 검색할 수 있습니다.
@@ -46,7 +46,7 @@
         -H 'cache-control: no-cache' -H 'content-type: application/json' \
         -d @fts-hotels-index.json
         
-## 2) Configure & Run Backend(Flask) Server
+## 2) Configure & Run Backend(Springboot) Server
 <br>
    a) 환경 변수 확인 <br>
    
@@ -62,13 +62,13 @@
    
       $ mvn clean install
       
-   d) Flask 구동<br>
+   d) Sringboot AppServer 구동<br>
    
       $ java -jar target/try-cb-spring.jar --server.port=8080 --spring.config.location=file:src/main/resources/application.properties
 
 ## 3) Configure & Run Frontend(Vue) Server
 
-   참고 : Backend(Flask)와 다른 터미널에서 수행.<br>
+   참고 : Backend(Springboot AppServer)와 다른 터미널에서 수행.<br>
    
    a) 구동을 위해 필요한 환경 구성<br>
    
