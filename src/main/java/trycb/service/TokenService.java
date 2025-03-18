@@ -25,7 +25,8 @@ package trycb.service;
 import com.couchbase.client.core.deps.io.netty.util.CharsetUtil;
 import com.couchbase.client.java.json.JsonObject;
 import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
+//import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.security.Keys;
 import javax.crypto.SecretKey;
@@ -63,28 +64,27 @@ public class TokenService {
         }
     }
 
-    private String verifyJwt(String token) {
-        SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)); // 256비트 키 필요
+    private String verifyJwt(String token) { 
         try {
+            // Base64 디코딩 후 SecretKey 생성 (JJWT 0.12.6 호환)
+            byte[] decodedKey = Base64.getDecoder().decode(secret); 
+            SecretKey key = Keys.hmacShaKeyFor(decodedKey); 
+
             JwtParser parser = Jwts.parser()
-		    .verifyWith(key)
-		    .build();
+            //        .verifyWith(key)  // verifyWith()는 parserBuilder()에서만 사용 가능
+                    .setSigningKey(key)
+                    .build();
 
-            String username = parser.parseSignedClaims(token)
-		    .getPayload()
-                    .get("user", String.class);;
-
-/*          String username = Jwts.parser()
-                    .setSigningKey(secret)
-                    .parseClaimsJws(token)
-                    .getBody()
-                    .get("user", String.class); */
-
+            // parseClaimsJws() → parseSignedClaims()로 변경 (JJWT 0.12.6)
+            String username = parser.parseSignedClaims(token) 
+                    .getPayload()
+                    .get("user", String.class);
+    
             return username;
         } catch (JwtException e) {
             throw new IllegalStateException("Could not verify JWT token", e);
         }
-    }
+    }  
 
     private String verifySimple(String token) {
         try {
@@ -100,7 +100,7 @@ public class TokenService {
         } else {
             return buildSimpleToken(username);
         }
-    }
+    } 
 
     private String buildJwtToken(String username) {
         String token = Jwts.builder().signWith(SignatureAlgorithm.HS512, secret)

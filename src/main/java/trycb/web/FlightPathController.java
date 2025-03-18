@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import trycb.model.Error;
 import trycb.model.IValue;
 import trycb.service.FlightPath;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
+@CrossOrigin(origins = "http://localhost:8081")
 @RestController
 @RequestMapping("/api/flightPaths")
 public class FlightPathController {

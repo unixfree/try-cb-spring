@@ -30,6 +30,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Document
+@Scope("inventory")
+@Collection("route")
 // @Scope and @Collection could be here; they are specified in repository interface
 public class FlightPath /* Route */ {
   String name;

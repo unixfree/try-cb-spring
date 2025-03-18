@@ -3,7 +3,8 @@
 
 set -e
 
-CB_HOST="${CB_HOST:-db}"
+#CB_HOST="${CB_HOST:-db}"
+CB_HOST="${CB_HOST:-localhost}"
 CB_USER="${CB_USER:-Administrator}"
 CB_PSWD="${CB_PSWD:-password}"
 

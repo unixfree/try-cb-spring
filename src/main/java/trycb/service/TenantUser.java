@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.couchbase.client.core.error.DocumentNotFoundException;
@@ -54,6 +55,7 @@ public class TenantUser {
   private final TokenService jwtService;
   private final UserRepository userRepository;
   private final BookingRepository bookingRepository;
+  private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
   public TenantUser(TokenService tokenService, UserRepository userRepository, BookingRepository bookingRepository) {
     this.jwtService = tokenService;
@@ -75,7 +77,7 @@ public class TenantUser {
       throw new AuthenticationCredentialsNotFoundException("Bad Username or Password");
     }
     User res = userHolder.get();
-    if (BCrypt.checkpw(password, res.password)) {
+    if (passwordEncoder.matches(password, res.password)) {
       Map<String, Object> data = JsonObject.create().put("token", jwtService.buildToken(username)).toMap();
       return Result.of(data, queryType);
     } else {
@@ -89,7 +91,7 @@ public class TenantUser {
   public Result<Map<String, Object>> createLogin(final String tenant, final String username, final String password,
       DurabilityLevel expiry) {
     UserRepository userRepository = this.userRepository.withScope(tenant);
-    String passHash = BCrypt.hashpw(password, BCrypt.gensalt());
+    String passHash = passwordEncoder.encode(password); 
     User user = new User(username, passHash);
     UpsertOptions options = UpsertOptions.upsertOptions();
     if (expiry.ordinal() > 0) {
@@ -101,7 +103,7 @@ public class TenantUser {
       Map<String, Object> data = JsonObject.create().put("token", jwtService.buildToken(username)).toMap();
       return Result.of(data, queryType);
     } catch (Exception e) {
-      throw new AuthenticationServiceException("There was an error creating account");
+      throw new AuthenticationServiceException("There was an error creating account",e);
     }
   }
 

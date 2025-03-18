@@ -4,7 +4,7 @@ services:
   backend:
     build: .
     depends_on:
-      - db
+      - localhost
     ports:
       - 8080:8080
     container_name: try-cb-api
@@ -18,7 +18,7 @@ services:
       container_name: try-cb-fe
       entrypoint: ["wait-for-it", "backend:8080", "--timeout=400", "--strict", "--", "npm", "run", "serve"]
 
-  db:
+  localhost:
     image: couchbase/server-sandbox:7.0.0
     ports:
       - "8091-8095:8091-8095"
