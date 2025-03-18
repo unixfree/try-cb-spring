@@ -5,198 +5,89 @@
 최신화 과정에서 보안 관련 소스 코드는 일부 변경되었고, </br>
 로컬 호스트에서 Springboot와 Vue.JS를 전부 구동시키기 위해 CORS 관련 부분도 변경되었습니다.</br>
 
-This is a sample application for getting started with [Couchbase Server] and [Spring Data Couchbase].
-The application runs a single page web UI for demonstrating SQL for Documents (N1QL), Sub-document requests and Full Text Search (FTS) querying capabilities.
-It uses Couchbase Server together with the [Spring Boot] web framework for [Java], [Swagger] for API documentation, [Vue] and [Bootstrap].
+이 애플리케이션은 [Couchbase Server]와 Python SDK를 사용하여 시작하기 위한 샘플 애플리케이션이며, 
+카우치베이스 DB의 문서(Json)용 SQL++, 서브-도큐먼트 요청 및 자연어 텍스트 검색(FTS) 쿼리 기능을 시연하기 위한 단일 페이지 웹 UI를 실행합니다. 
+이 애플리케이션은 1) Couchbase Server와 2) [Python]을 위한 [Flask] 웹 프레임워크, API 문서화를 위한 [Swagger], 3)[Vue], 그리고 [Bootstrap]로 구성되어 있습니다.
 
-The application is a flight planner that allows the user to search for and select a flight route (including the return flight) based on airports and dates.
-Airport selection is done dynamically using an autocomplete box bound to N1QL queries on the server side. After selecting a date, it then searches
-for applicable air flight routes from a previously populated database. An additional page allows users to search for Hotels using less structured keywords.
+이 애플리케이션은 사용자가 공항과 날짜를 기반으로 항공편 경로를 검색하고 구매할 수 있는 비행 계획 도구입니다. 공항 선택은 서버 측 SQL++ 쿼리에 연결된 자동 완성 상자를 통해 동적으로 이루어집니다. 
+날짜 선택 후에는 데이터베이스에서 적합한 항공편 경로를 검색합니다. 추가 페이지에서는 비구조화된 키워드를 사용하여 호텔을 검색할 수 있습니다.
 
 ![Application](app.png)
 
 
 ## Prerequisites
 
-To download the application you can either download [the archive](https://github.com/couchbaselabs/try-cb-spring/archive/master.zip) or clone the repository:
+   아래와 같이 애플리케이션을 다운로드 하세요
+   
+      $ mkdir travel-app
+      $ cd travel-app
+      $ git clone https://github.com/unixfree/try-cb-spring.git
+      $ git clone https://github.com/unixfree/try-cb-frontend-v2.git
 
-    git clone https://github.com/couchbaselabs/try-cb-spring.git
+      이 애플리케이션은 Docker로 실행할 수 있으나, 
+      DB(Couchabse), Backend(Flask), Frontend(Vue)를 각각 구성, 수행하는 방법을 따릅니다.
 
-<!-- If you want to run the application from your IDE rather than from the command line you also need your IDE set up to
-work with maven-based projects. We recommend running IntelliJ IDEA, but Eclipse or Netbeans will also work. -->
+## 1) Configure & Run Couchabse Server
 
-We recommend running the application with Docker, which starts up all components for you,
-but you can also run it in a Mix-and-Match style, which we'll decribe below.
+   로컬 Labtop(Windows,MacBook)에 설치 할 수도 있고, Linux 서버에 설치형, 완전 구독형 Capella(DBaaS), Docker Container로 구성할 수 있습니다. <br>
+<br>
+   여기에서는 로컬 Labtop(Windows,MacBook)에 설치하는 구성으로 설명하겠습니다.<br>
+   아래 페이지를 참고 하십시오. .<br>
+   https://docs.couchbase.com/server/current/install/install-package-windows.html  <br>
+   https://docs.couchbase.com/server/current/install/macos-install.html  <br>
+   
+   a) [카우치베이스 다운로드 사이트]에서 Windows,MacBook 용 Couchbase를 다운 받아서 설치하세요.<br>
+      ID/PW 를 " Administrator / password " 로 구성하세요.<br>
+   b) 설치 후, "Setting" > "Sample Buckets" 페이지에서 travel-sample 를 선택 후 "Load Sample Data" 를 클릭하세요.<br>
+   c) 아래와 같이 FTS(FullTextSearch) 서비스의 검색 기능을 활용하기 위해 아래와 같이 검색 인덱스를 생성하세요<br>
+   
+      $ cd try-cb-spring
+      $ curl -s -u Administrator:password -X PUT http://127.0.0.1:8094/api/index/hotels-index \
+        -H 'cache-control: no-cache' -H 'content-type: application/json' \
+        -d @fts-hotels-index.json
+        
+## 2) Configure & Run Backend(Flask) Server
+<br>
+   a) 환경 변수 확인 <br>
+   
+      $ cd try-cb-spring
+      $ more src/main/resources/application.properties
 
-## Running the application with Docker
+   b) Couchbase DB가 잘 설치되었는지, FTS 검색 인덱스가 정상 생성되었는지 확인.
+   
+      $ export CB_HOST=localhost CB_USER=Administrator CB_PSWD=password
+      $ ./wait-for-couchbase.sh echo "Couchbase is ready!"
+      
+   c) mvn 으로 클린 빌드 설치 <br>
+   
+      $ mvn clean install
+      
+   d) Flask 구동<br>
+   
+      $ java -jar target/try-cb-spring.jar --server.port=8080 --spring.config.location=file:src/main/resources/application.properties
 
-You will need [Docker](https://docs.docker.com/get-docker/) installed on your machine in order to run this application as we have defined a [_Dockerfile_](Dockerfile) and a [_docker-compose.yml_](docker-compose.yml) to run Couchbase Server 7.0.0 beta, the front-end [Vue app](https://github.com/couchbaselabs/try-cb-frontend-v2.git) and the Java REST API.
+## 3) Configure & Run Frontend(Vue) Server
 
-To launch the full application, simply run this command from a terminal:
+   참고 : Backend(Flask)와 다른 터미널에서 수행.<br>
+   
+   a) 구동을 위해 필요한 환경 구성<br>
+   
+      $ cd try-cb-frontend-v2
+      $ npm install
+      $ npm audit fix --force (optional)
+      
+   b) Vue 구동<br>
+   
+      $ npm run serve
 
-    docker-compose up
+## 4) Start Demonstration
 
-> **_NOTE:_** When you run the application for the first time, it will pull/build the relevant docker images, so it might take a bit of time.
-
-This will start the Java backend, Couchbase Server 7.0.0-beta and the Vue frontend app.
-
-```
-❯ docker-compose up
-...
-Creating couchbase-sandbox-7.0.0-beta ... done
-Creating try-cb-api                   ... done
-Creating try-cb-fe                    ... done
-Attaching to couchbase-sandbox-7.0.0-beta, try-cb-api, try-cb-fe
-couchbase-sandbox-7.0.0-beta | Starting Couchbase Server -- Web UI available at http://<ip>:8091
-couchbase-sandbox-7.0.0-beta | and logs available in /opt/couchbase/var/lib/couchbase/logs
-couchbase-sandbox-7.0.0-beta | Configuring Couchbase Server.  Please wait (~60 sec)...
-try-cb-api  | wait-for-couchbase: checking http://db:8091/pools/default/buckets/travel-sample/
-try-cb-api  | wait-for-couchbase: polling for '.scopes | map(.name) | contains(["inventory", "
-try-cb-fe   | wait-for-it: waiting 400 seconds for backend:8080
-try-cb-api  | wait-for-couchbase: ...
-couchbase-sandbox-7.0.0-beta | Configuration completed!
-couchbase-sandbox-7.0.0-beta | Couchbase Admin UI: http://localhost:8091 
-couchbase-sandbox-7.0.0-beta | Login credentials: Administrator / password
-try-cb-api  | wait-for-couchbase: checking http://db:8094/api/cfg
-try-cb-api  | wait-for-couchbase: polling for '.status == "ok"'
-try-cb-api  | wait-for-couchbase: checking http://db:8094/api/index/hotels-index
-try-cb-api  | wait-for-couchbase: polling for '.status == "ok"'
-try-cb-api  | wait-for-couchbase: Failure
-try-cb-api  | wait-for-couchbase: Creating hotels-index...
-try-cb-api  | wait-for-couchbase: checking http://db:8094/api/index/hotels-index/count
-try-cb-api  | wait-for-couchbase: polling for '.count >= 917'
-try-cb-api  | wait-for-couchbase: ...
-try-cb-api  | wait-for-couchbase: ...
-try-cb-api  | wait-for-couchbase: checking http://db:9102/api/v1/stats
-try-cb-api  | wait-for-couchbase: polling for '.indexer.indexer_state == "Active"'
-try-cb-api  | wait-for-couchbase: polling for '. | keys | contains(["travel-sample:def_airport
-try-cb-api  | wait-for-couchbase: polling for '. | del(.indexer) | del(.["travel-sample:def_na
-try-cb-api  | wait-for-couchbase: value is currently:
-try-cb-api  | false
-try-cb-api  | wait-for-couchbase: ...
-try-cb-api  | wait-for-couchbase: polling for '. | del(.indexer) | map(.num_pending_requests =
-try-cb-api  | 
-try-cb-api  |   .   ____          _            __ _ _
-try-cb-api  |  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-try-cb-api  | ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
-try-cb-api  |  \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-try-cb-api  |   '  |____| .__|_| |_|_| |_\__, | / / / /
-try-cb-api  |  =========|_|==============|___/=/_/_/_/
-try-cb-api  |  :: Spring Boot ::                (v2.5.0)
-try-cb-api  | 
-try-cb-api  | 2021-06-04 14:47:12.896  INFO 1 --- [           main] trycb.Application                        : Starting Application v2.3.0 using Java 1.8.0_292 on e7a5966cfaad with PID 1 (/app/target/try-cb-spring.jar started by root in /app)
-try-cb-api  | 2021-06-04 14:47:12.908  INFO 1 --- [           main] trycb.Application                        : No active profile set, falling back to default profiles: default
-try-cb-api  | 2021-06-04 14:47:17.271  INFO 1 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
-try-cb-api  | 2021-06-04 14:47:17.335  INFO 1 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-try-cb-api  | 2021-06-04 14:47:17.335  INFO 1 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.46]
-try-cb-api  | 2021-06-04 14:47:17.531  INFO 1 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-try-cb-api  | 2021-06-04 14:47:17.532  INFO 1 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 4339 ms
-try-cb-api  | 2021-06-04 14:47:17.787 DEBUG 1 --- [           main] o.s.w.f.CommonsRequestLoggingFilter      : Filter 'logFilter' configured for use
-try-cb-api  | 2021-06-04 14:47:19.460  INFO 1 --- [      cb-events] com.couchbase.core                       : [com.couchbase.core][DnsSrvLookupFailedEvent][75ms] DNS SRV lookup failed (name not found), trying to bootstrap from given hostname directly.
-try-cb-api  | 2021-06-04 14:47:22.039  INFO 1 --- [      cb-events] com.couchbase.core                       : [com.couchbase.core][BucketOpenedEvent][1184ms] Opened bucket "travel-sample" {"coreId":"0x8503f8fb00000001"}
-try-cb-api  | 2021-06-04 14:47:23.953  INFO 1 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
-try-cb-api  | 2021-06-04 14:47:24.012  INFO 1 --- [           main] trycb.Application                        : Started Application in 12.758 seconds (JVM running for 14.829)
-try-cb-api  | 2021-06-04 14:47:24.019  INFO 1 --- [           main] o.s.b.a.ApplicationAvailabilityBean      : Application availability state LivenessState changed to CORRECT
-try-cb-api  | 2021-06-04 14:47:24.025  INFO 1 --- [           main] o.s.b.a.ApplicationAvailabilityBean      : Application availability state ReadinessState changed to ACCEPTING_TRAFFIC
-try-cb-fe   | wait-for-it: backend:8080 is available after 88 seconds
-try-cb-fe   | 
-try-cb-fe   | > try-cb-frontend-v2@0.1.0 serve
-try-cb-fe   | > vue-cli-service serve --port 8081
-try-cb-fe   | 
-try-cb-fe   |  INFO  Starting development server...
-try-cb-fe   |  DONE  Compiled successfully in 7785ms2:47:36 PM
-try-cb-fe   | 
-try-cb-fe   | 
-try-cb-fe   |   App running at:
-try-cb-fe   |   - Local:   http://localhost:8081/ 
-try-cb-fe   | 
-try-cb-fe   |   It seems you are running Vue CLI inside a container.
-try-cb-fe   |   Access the dev server via http://localhost:<your container's external mapped port>/
-try-cb-fe   | 
-try-cb-fe   |   Note that the development build is not optimized.
-try-cb-fe   |   To create a production build, run npm run build.
-try-cb-fe   | 
-```
-
-You should then be able to browse the UI, search for US airports and get flight
-route information.
-
-To end the application press <kbd>Control</kbd>+<kbd>C</kbd> in the terminal
-and wait for docker-compose to gracefully stop your containers.
-
-## Mix and match services
-
-Instead of running all services, you can start any combination of `backend`,
-`frontend`, `db` via docker, and take responsibility for starting the other
-services yourself.
-
-As the provided `docker-compose.yml` sets up dependencies between the services,
-to make startup as smooth and automatic as possible, we also provide an
-alternative `mix-and-match.yml`. We'll look at a few useful scenarios here.
-
-### Bring your own database
-
-If you wish to run this application against your own configuration of Couchbase
-Server, you will need version 7.0.0 beta or later with the `travel-sample`
-bucket setup.
-
-> **_NOTE:_** If you are not using Docker to start up the API server, or the
-> provided wrapper `wait-for-couchbase.sh`, you will need to create a full text
-> search index on travel-sample bucket called 'hotels-index'. You can do this
-> via the following command:
-
-    curl --fail -s -u <username>:<password> -X PUT \
-            http://<host>:8094/api/index/hotels-index \
-            -H 'cache-control: no-cache' \
-            -H 'content-type: application/json' \
-            -d @fts-hotels-index.json
-
-With a running Couchbase Server, you can pass the database details in:
-
-    CB_HOST=10.144.211.101 CB_USER=Administrator CB_PSWD=password docker-compose -f mix-and-match.yml up backend frontend
-
-The Docker image will run the same checks as usual, and also create the
-`hotels-index` if it does not already exist.
-
-### Running the Java API application manually
-
-You may want to run the Java application yourself, to make rapid changes to it,
-and try out the features of the Couchbase API, without having to re-build the Docker
-image. You may still use Docker to run the Database and Frontend components if desired.
-
-Please ensure that you have the following before proceeding.
-
-* Java 8 or later (Java 11 recommended)
-* Maven 3 or later
-
-Install the dependencies:
-
-    mvn clean install
-
-The first time you run against a new database image, you may want to use the provided
-`wait-for-couchbase.sh` wrapper to ensure that all indexes are created.
-For example, using the Docker image provided:
-
-    docker-compose -f mix-and-match.yml up db
-
-    export CB_HOST=localhost CB_USER=Administrator CB_PSWD=password
-    ./wait-for-couchbase.sh echo "Couchbase is ready!"
-    
-    mvn spring-boot:run -Dspring-boot.run.arguments="--storage.host=$CB_HOST storage.username=$CB_USER storage.password=$CB_PSWD"
-
-If you already have an existing Couchbase server running and correctly configured, you might run:
-
-    java -jar target/try-cb-spring.jar --server.port=8080 --spring.config.location=file:src/main/resources/application.properties
-
-Finally, if you want to see how the sample frontend Vue application works with your changes,
-run it with:
-
-    docker-compose -f mix-and-match.yml up frontend
-
-### Running the front-end manually
-
-To run the frontend components manually without Docker, follow the guide
-[here](https://github.com/couchbaselabs/try-cb-frontend-v2)
+   DB(Couchbase)는 http://localhost:8091 로 접속하고, <br>
+   Backend(Flask)는 http://localhost:8080, <br>
+   Frontend(Vue)는 http://localhost:8081로 접속합니다.<br>
+<br>
+   http://localhost:8081 로 접속 후, 계정 하나를 등록(Register) 하고 항공 스케줄 검색/예약/구매 및 호텔 검색을 수행할 수 있습니다.<br>
+<br>
 
 ## REST API reference
 
