@@ -168,7 +168,7 @@ Please ensure that you have the following before proceeding.
 
 Install the dependencies:
 
-    **mvn clean install**
+    __mvn clean install__
 
 The first time you run against a new database image, you may want to use the provided
 `wait-for-couchbase.sh` wrapper to ensure that all indexes are created.
@@ -183,7 +183,7 @@ For example, using the Docker image provided:
 
 If you already have an existing Couchbase server running and correctly configured, you might run:
 
-    **java -jar target/try-cb-spring.jar --server.port=8080 --spring.config.location=file:src/main/resources/application.properties**
+    __java -jar target/try-cb-spring.jar --server.port=8080 --spring.config.location=file:src/main/resources/application.properties__
 
 Finally, if you want to see how the sample frontend Vue application works with your changes,
 run it with:
